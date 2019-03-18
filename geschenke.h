@@ -17,6 +17,7 @@ typedef struct{
 void print_schlitten(schlitten *alle_schlitten, int cnt_schlitten);
 void print_geschenke(geschenk *start);
 schlitten * read_schlitten(schlitten * alle_schlitten, int anzahl, FILE * input);
+schlitten * free_schlitten(schlitten * alle_schlitten, int anzahl);
 schlitten * add_schlitten(schlitten *alle_schlitten, FILE * input);
 geschenk * read_geschenke(geschenk *start, FILE * input);
 geschenk * add_geschenk(geschenk * start, geschenk * neu);

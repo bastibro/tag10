@@ -26,19 +26,45 @@ int main(int argc, char **argv) {
   alle_schlitten = read_schlitten(alle_schlitten, anzahl, input);
   puts("printing schlitten...\n");
   print_schlitten(alle_schlitten, anzahl);
+
   geschenk *start = NULL;
   start = read_geschenke(start, input);
+
   puts("printing geschenke...\n");
   print_geschenke(start);
+
   puts("starting zuordnung...\n");
   start = geschenke_zuordnen(alle_schlitten, start, anzahl);
-  puts("starting zuordnung...\n");
+
+  puts("printing after zuordnung...\n");
   print_schlitten(alle_schlitten, anzahl);
   /* start = remove_geschenk(start, "C"); */
   puts("printing geschenke again..\n");
   print_geschenke(start);
+
+  alle_schlitten = free_schlitten(alle_schlitten, anzahl);
   fclose(input);
   return 0;
+}
+
+schlitten *free_schlitten(schlitten *alle_schlitten, int anzahl) {
+  while (alle_schlitten != NULL) {
+    schlitten* aktueller_schlitten = alle_schlitten;
+    geschenk* liste = aktueller_schlitten->liste;
+
+    while (liste != NULL) {
+      geschenk* aktuell = liste;
+
+      liste = liste->next;
+      free(aktuell);
+    }
+
+
+    alle_schlitten = alle_schlitten->naechster;
+    free(aktueller_schlitten);
+  }
+
+  return NULL;
 }
 
 schlitten *read_schlitten(
@@ -185,14 +211,22 @@ geschenk *remove_geschenk(geschenk *start, char *name) {
       if (strcmp(name, aktuell->name) == 0) {
         if (vorgaenger != NULL) {
           vorgaenger->next = aktuell->next;
-          free(aktuell)
+          free(aktuell);
           return start;
         } else {
-          geschenk *tmp = start;
-          start = start->next;
-          free(aktuell)
-          return start;
+          geschenk* new_start = start->next;
+          free(start);
+          return new_start;
         }
+
+        /*   vorgaenger->next = aktuell->next; */
+        /*   free(aktuell); */
+        /*   return start; */
+        /* } else { */
+        /*   start = start->next; */
+        /*   free(aktuell); */
+        /*   return start; */
+        /* } */
       }
       vorgaenger = aktuell;
       aktuell = aktuell->next;
