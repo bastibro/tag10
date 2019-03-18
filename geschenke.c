@@ -185,12 +185,12 @@ geschenk *remove_geschenk(geschenk *start, char *name) {
       if (strcmp(name, aktuell->name) == 0) {
         if (vorgaenger != NULL) {
           vorgaenger->next = aktuell->next;
-          // free
+          free(aktuell)
           return start;
         } else {
           geschenk *tmp = start;
           start = start->next;
-          // free
+          free(aktuell)
           return start;
         }
       }
