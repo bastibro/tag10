@@ -1,0 +1,19 @@
+9
+out_test 10
+Dancer5 9
+Prancer5 8
+Vixen5 7
+Comet5 6
+Cupid5 5
+Donner5 4
+Blitzen5 3
+Rudolph5 2
+10 A
+9 B
+8 C
+7 D
+6 E
+5 F
+4 G
+3 H
+2 I

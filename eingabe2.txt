@@ -1,0 +1,11 @@
+4
+Rudolf2 10 
+Dancer2 5
+Comet2 10
+Blitzen2 8
+2 A
+5 B
+7 C
+2 D
+8 E
+2 F
