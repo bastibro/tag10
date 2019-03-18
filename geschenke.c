@@ -12,10 +12,10 @@
 //FILE* ausgabe = NULL;
 
 int main(int argc, char **argv){
-	if (argc != 2){
+	if (argc != 2) {
 		puts("Bitte genau 2 parameter übergeben");
 		return 1;
-		}
+	}
 	FILE *input = fopen(argv[1], "r");
 	int anzahl;
 	puts("hi");
@@ -32,6 +32,7 @@ int main(int argc, char **argv){
 	print_geschenke(start);
 	puts("starting zuordnung...\n");
 	geschenke_zuordnen(alle_schlitten, start, anzahl);
+	print_schlitten(alle_schlitten, anzahl);
 	//start = remove_geschenk(start, "C");
 	puts("printing geschenke again..\n");
 	print_geschenke(start);
@@ -51,8 +52,7 @@ schlitten * read_schlitten(schlitten * alle_schlitten, int anzahl, FILE * input)
     return alle_schlitten;
 }
 
-schlitten * add_schlitten(schlitten *alle_schlitten, FILE * input){
-	
+schlitten * add_schlitten(schlitten * alle_schlitten, FILE * input){
 	char rentier[100];
 	int kapazitaet;
 	schlitten *i;
@@ -77,7 +77,7 @@ schlitten * add_schlitten(schlitten *alle_schlitten, FILE * input){
 	return alle_schlitten;
 }
 
-geschenk * read_geschenke(geschenk *start, FILE * input){
+geschenk * read_geschenke(geschenk * start, FILE * input){
 	int groesse;
 	char name[100];
 	geschenk * tmp;
@@ -108,7 +108,7 @@ geschenk * add_geschenk(geschenk * start, geschenk * neu){
         return start;
 }
 
-void geschenke_zuordnen(schlitten* alle_schlitten, geschenk * start, int anzahl){
+void geschenke_zuordnen(schlitten * alle_schlitten, geschenk * start, int anzahl){
 	int groesse;
 	char name[100];
 	geschenk * tmp = start;
@@ -121,11 +121,12 @@ void geschenke_zuordnen(schlitten* alle_schlitten, geschenk * start, int anzahl)
 		best_schlitten = find_schlitten(alle_schlitten, groesse, anzahl); //get best schlitten
 		printf("%d is %s\n", best_schlitten, name );
 
-		//alle_schlitten = geschenk_laden(alle_schlitten, best_schlitten, groesse, name);puts("woooow");
+		alle_schlitten = geschenk_laden(alle_schlitten, best_schlitten, groesse, name);puts("woooow");
 		start = remove_geschenk(start, name);
+
+		// 
 		tmp = tmp->next;
 	}
-
 }
 
 int find_schlitten(schlitten * alle_schlitten, int groesse, int anzahl){
@@ -155,14 +156,37 @@ int find_schlitten(schlitten * alle_schlitten, int groesse, int anzahl){
 schlitten * geschenk_laden(schlitten * alle_schlitten, int best_schlitten, int groesse, char * name){
 	schlitten * tmpschlitten = alle_schlitten;
 	
-	for(int i = 0; i < best_schlitten; i++){
+	for(int i = 0; i < best_schlitten; i++) {
 		tmpschlitten = tmpschlitten->naechster;
 	}
-	puts("woooow1");
-	tmpschlitten->liste->groesse = groesse; puts("woooow2");
-	strcpy(tmpschlitten->liste->name, name);
+
+    //printf("size %d\n", sizeof(alle_schlitten));
+    //printf("best %d\n", best_schlitten);
+    //printf("best& %x\n", &alle_schlitten[0]);
+    //printf("tmp& %x\n", alle_schlitten[0]);
+    printf("alle [best]%d\n", tmpschlitten->kapazitaet);
+    
+	geschenk * geschenk_pt = malloc(sizeof(geschenk));
+    
+    geschenk_pt->next = NULL;
+	geschenk_pt->groesse = groesse;
+    strcpy(geschenk_pt->name, name);
+
+    geschenk * tmp_liste = tmpschlitten->liste;
+
+	while(tmp_liste != NULL) {	
+		tmp_liste = tmp_liste->next;
+	}
+
+	tmp_liste = geschenk_pt;
+
+	tmpschlitten->fuellstand += groesse;
+    
+	puts("\nwoooow1");
+	//tmpschlitten->liste->groesse = groesse;
+	puts("woooow2");
 	
-	return tmpschlitten;
+	return alle_schlitten;
 }
 
 
@@ -172,7 +196,7 @@ geschenk * remove_geschenk(geschenk *start, char * name){
 		geschenk *vorgaenger = NULL;
 		geschenk *aktuell = start;
 
-		while(aktuell != NULL){
+		while(aktuell != NULL) {
 			//fprintf(stdout, "Name: %s\nGroesse: %d\n\n", start->name, start->groesse);
 			if (strcmp(name, aktuell->name) == 0) {
 				if (vorgaenger != NULL){
@@ -192,14 +216,15 @@ geschenk * remove_geschenk(geschenk *start, char * name){
 		aktuell = aktuell->next;
 		
 		}
-	}return start;
+	}
 	return start;
 }
 void print_schlitten(schlitten *alle_schlitten, int cnt_schlitten){
 	if(alle_schlitten == NULL) fprintf(stdout, "Keine Schlitten da.\n");
 	else {
 		while(alle_schlitten != NULL){
-			printf("rentier ist: %s\nkapazitaet ist: %d\n\n", alle_schlitten->rentier, alle_schlitten->kapazitaet);
+			printf("rentier ist: %s\nkapazitaet ist: %d\n", alle_schlitten->rentier, alle_schlitten->kapazitaet);
+			printf("fuellstand ist: %d\n\n", alle_schlitten->fuellstand);
 			//fprintf(stdout, "%s %i\n", start->rentier, start->groesse);
 			alle_schlitten = alle_schlitten->naechster; 
 		}
