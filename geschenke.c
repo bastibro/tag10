@@ -150,6 +150,7 @@ struct geschenk *geschenke_zuordnen(struct schlitten *alle_schlitten, struct ges
   while (tmp != NULL) {
     groesse = tmp->groesse;
     strcpy(name, tmp->name);
+    tmp = tmp->next; /////// FUCK VALGRIND
     best_schlitten =
         find_schlitten(alle_schlitten, groesse, anzahl); // get best schlitten
 
@@ -169,7 +170,6 @@ struct geschenk *geschenke_zuordnen(struct schlitten *alle_schlitten, struct ges
       alle_schlitten = free_schlitten(alle_schlitten, anzahl);
       return start;
     }
-    tmp = tmp->next;
   }
 
   return start;
