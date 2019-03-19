@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
   start = geschenke_zuordnen(alle_schlitten, start, anzahl);
   if(errno == 1){
-    alle_schlitten = free_schlitten(alle_schlitten, anzahl);
+    fclose(input);
     return 3;
   }
   fclose(input);
@@ -153,11 +153,22 @@ struct geschenk *geschenke_zuordnen(struct schlitten *alle_schlitten, struct ges
     best_schlitten =
         find_schlitten(alle_schlitten, groesse, anzahl); // get best schlitten
 
-    alle_schlitten =
-        geschenk_laden(alle_schlitten, best_schlitten, groesse, name);
+    if(best_schlitten != -1) {
+      alle_schlitten =
+          geschenk_laden(alle_schlitten, best_schlitten, groesse, name);
 
-    start = remove_geschenk(start, name);
+      start = remove_geschenk(start, name);
+    } else {
+      while(start!=NULL) {
+        struct geschenk* old = start;
+        
+        start = start->next;
+        free(old);
+      }
 
+      alle_schlitten = free_schlitten(alle_schlitten, anzahl);
+      return start;
+    }
     tmp = tmp->next;
   }
 
