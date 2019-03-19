@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 // sh-Datein nutzbar machen: chmod 777 <datei>.sh
 // rückgabewert des programms anzeigen lassen:
@@ -13,37 +14,47 @@
 
 int main(int argc, char **argv) {
   if (argc != 2) {
-    puts("Bitte genau 2 parameter übergeben");
     return 1;
   }
+  errno = 0;
   FILE *input = fopen(argv[1], "r");
+  if (errno != 0){
+    return 2;
+  }
   int anzahl;
-  puts("hi");
   fscanf(input, "%d", &anzahl);
-  puts("bye");
   printf("anzahl ist: %d\n", anzahl);
   struct schlitten *alle_schlitten = NULL;
+  errno = 0;
   alle_schlitten = read_schlitten(alle_schlitten, anzahl, input);
-  puts("printing schlitten...\n");
-  print_schlitten(alle_schlitten, anzahl);
 
+  if (errno != 0){
+    alle_schlitten = free_schlitten(alle_schlitten, anzahl);
+    return 2;
+  }
+  print_schlitten(alle_schlitten, anzahl);
+  
   struct geschenk *start = NULL;
   start = read_geschenke(start, input);
 
-  puts("printing geschenke...\n");
-  print_geschenke(start);
+  //print_geschenke(start);
 
-  puts("starting zuordnung...\n");
   start = geschenke_zuordnen(alle_schlitten, start, anzahl);
-
-  puts("printing after zuordnung...\n");
+  if(errno == 1){
+    alle_schlitten = free_schlitten(alle_schlitten, anzahl);
+    return 3;
+  }
+  fclose(input);
+  errno = 0;
   print_schlitten(alle_schlitten, anzahl);
-  /* start = remove_geschenk(start, "C"); */
-  puts("printing geschenke again..\n");
-  print_geschenke(start);
+  if (errno != 0){
+    puts("error beim readen");
+    alle_schlitten = free_schlitten(alle_schlitten, anzahl);
+    return 2;
+  }
 
   alle_schlitten = free_schlitten(alle_schlitten, anzahl);
-  fclose(input);
+  
   return 0;
 }
 
@@ -80,8 +91,6 @@ struct schlitten *read_schlitten(
 }
 
 struct schlitten *add_schlitten(struct schlitten *alle_schlitten, FILE *input) {
-  char rentier[100];
-  int kapazitaet;
   struct schlitten *i;
   struct schlitten *tmp = alle_schlitten;
   i = malloc(sizeof(struct schlitten));
@@ -100,7 +109,6 @@ struct schlitten *add_schlitten(struct schlitten *alle_schlitten, FILE *input) {
     tmp->naechster = i;
   }
   if (alle_schlitten == NULL) {
-    puts("schlitten ist null\n");
   }
   return alle_schlitten;
 }
@@ -110,7 +118,6 @@ struct geschenk *read_geschenke(struct geschenk *start, FILE *input) {
   char name[100];
   struct geschenk *tmp;
   while ((fscanf(input, "%d %s", &groesse, name) != EOF)) {
-    printf("name: %s\ngroesse: %d\n\n", name, groesse);
     tmp = malloc(sizeof(struct geschenk));
     tmp->next = NULL;
     tmp->groesse = groesse;
@@ -138,7 +145,6 @@ struct geschenk *geschenke_zuordnen(struct schlitten *alle_schlitten, struct ges
   int groesse;
   char name[100];
   struct geschenk *tmp = start;
-  struct schlitten *tmpschlitten;
   int best_schlitten;
 
   while (tmp != NULL) {
@@ -160,7 +166,7 @@ struct geschenk *geschenke_zuordnen(struct schlitten *alle_schlitten, struct ges
 
 int find_schlitten(struct schlitten *alle_schlitten, int groesse, int anzahl) {
   struct schlitten *tmpschlitten = alle_schlitten;
-  int freiraum = 100;
+  int freiraum = 10000;
   int best_schlitten = -1; // speichert den momentan bestgeeigneten schlitten
 
   for (int i = 0; i < anzahl; i++) {
@@ -175,7 +181,7 @@ int find_schlitten(struct schlitten *alle_schlitten, int groesse, int anzahl) {
   }
 
   if (best_schlitten == -1) {
-    puts("NO SCHLITTEN FOUND!!");
+    errno = 1;
   }
   return best_schlitten;
 }
@@ -215,18 +221,9 @@ struct geschenk *remove_geschenk(struct geschenk *start, char *name) {
           return start;
         } else {
           struct geschenk* new_start = start->next;
-          free(start);
+          free(aktuell);
           return new_start;
         }
-
-        /*   vorgaenger->next = aktuell->next; */
-        /*   free(aktuell); */
-        /*   return start; */
-        /* } else { */
-        /*   start = start->next; */
-        /*   free(aktuell); */
-        /*   return start; */
-        /* } */
       }
       vorgaenger = aktuell;
       aktuell = aktuell->next;
@@ -239,10 +236,25 @@ void print_schlitten(struct schlitten *alle_schlitten, int cnt_schlitten) {
     fprintf(stdout, "Keine Schlitten da.\n");
   else {
     while (alle_schlitten != NULL) {
-      printf("rentier ist: %s\nkapazitaet ist: %d\n", alle_schlitten->rentier,
-             alle_schlitten->kapazitaet);
-      printf("fuellstand ist: %d\n\n", alle_schlitten->fuellstand);
-      print_geschenke(alle_schlitten->liste);
+     
+      //print_geschenke(alle_schlitten->liste);
+      char file_name[100];
+      strcpy(file_name, alle_schlitten->rentier);
+      strcat(file_name ,".txt");
+
+
+      FILE *ausgabe = fopen(file_name, "w");
+      if (errno != 0){
+        return;
+      }
+
+      struct geschenk* liste = alle_schlitten->liste;
+      while (liste != NULL) {
+        fprintf(ausgabe, "%s %d\n", liste->name, liste->groesse);
+
+        liste = liste->next;
+      }
+      fclose(ausgabe);
 
       alle_schlitten = alle_schlitten->naechster;
     }
